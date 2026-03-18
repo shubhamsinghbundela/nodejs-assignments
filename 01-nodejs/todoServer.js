@@ -45,5 +45,83 @@
   const app = express();
   
   app.use(bodyParser.json());
+
+  let dataStore = [];
+  let id = 1;
+
+  app.get('/todos', function(req, res){
+    //Response: 200 OK with an array of todo items in JSON format.
+    res.status(200).json(dataStore);
+  })
+
+  app.get('/todos/:id', function(req, res){
+    const todoId = +req.params.id;
+    const todo = dataStore.find((t) => t.id === todoId);
+    // 200 OK with the todo item in JSON format if found, or 404 Not Found if not found.
+    if(!todo){
+      res.status(404).send("Not Found");
+    }
+    res.status(200).json(todo);
+
+  })
+
+  app.post("/todos", function(req, res) {
+    const title = req.body.title;
+    const description = req.body.description;
+    const newId = id++;
+
+    // Creates a new todo item.
+    dataStore.push({
+      title, description, id: newId
+    });
+
+    // Response: 201 Created with the ID of the created todo item in JSON format. eg: {id: 1}
+    res.status(201).json({id: newId});
+  })
+
+  app.put("/todos/:id", (req, res)=>{
+    const todoId = +req.params.id;
+    console.log('todoId', todoId);
+    const title = req.body.title;
+    console.log('title', title);
+    const description = req.body.description;
+    console.log('description', description);
+    const todo = dataStore?.some((t) => t.id === todoId);
+    if(!todo){
+      res.status(404).send("Not Found");
+      return;
+    }
+    dataStore.forEach((t) => {
+      // console.log('t', t)
+      if(t.id === todoId){
+        t.title = title ?? t.title;
+        t.description = description ?? t.description;
+      }
+    });
+
+    res.status(200);
+    res.end()
+  })
+
+  app.delete("/todos/:id", (req, res)=>{
+    const todoId = +req.params.id;
+    const index = dataStore.findIndex((t) => t.id == todoId);
+    console.log('index', index)
+    if(index === -1){
+      res.status(404).send("Not Found");
+    }
+    dataStore.splice(index,1);
+    res.status(200).json(dataStore);
+  })
+
+  app.use((req, res, next) => {
+    res.status(404);
+    res.end();
+  });
+
+
+  // start the server in the port 3000 !
+
+  // app.listen(3000);
   
   module.exports = app;
