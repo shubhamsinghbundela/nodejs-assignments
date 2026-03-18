@@ -40,6 +40,7 @@
   Testing the server - run `npm run test-todoServer` command in terminal
  */
   const express = require('express');
+  const fs = require('fs');
   const bodyParser = require('body-parser');
   
   const app = express();
@@ -51,41 +52,47 @@
 
   app.get('/todos', function(req, res){
     //Response: 200 OK with an array of todo items in JSON format.
-    res.status(200).json(dataStore);
+    fs.readFile('todos.json', 'utf8', (err,data)=>{
+      const todos = JSON.parse(data);
+      res.status(200).json(todos);
+    })
   })
 
   app.get('/todos/:id', function(req, res){
-    const todoId = +req.params.id;
-    const todo = dataStore.find((t) => t.id === todoId);
-    // 200 OK with the todo item in JSON format if found, or 404 Not Found if not found.
-    if(!todo){
-      res.status(404).send("Not Found");
-    }
-    res.status(200).json(todo);
-
+    fs.readFile('todos.json', 'utf8', (err,data)=>{
+      const todoId = +req.params.id;
+      const todos = JSON.parse(data);
+      const todo = todos.find((t) => t.id === todoId);
+      // 200 OK with the todo item in JSON format if found, or 404 Not Found if not found.
+      if(!todo){
+        res.status(404).send("Not Found");
+      }
+      res.status(200).json(todo);
+    })
   })
 
   app.post("/todos", function(req, res) {
-    const title = req.body.title;
-    const description = req.body.description;
-    const newId = id++;
-
-    // Creates a new todo item.
-    dataStore.push({
-      title, description, id: newId
-    });
-
-    // Response: 201 Created with the ID of the created todo item in JSON format. eg: {id: 1}
-    res.status(201).json({id: newId});
+    fs.readFile('todos.json', 'utf8', (err,data)=>{
+      const title = req.body.title;
+      const description = req.body.description;
+      const newId = id++;
+      const todos = JSON.parse(data); // convert json to normal object
+      todos.push({
+        title, description, id: newId
+      })
+      fs.writeFile('todos.json', JSON.stringify(todos), (err)=>{
+        if (err) throw err;
+        res.status(201).json({
+        title, description, id: newId
+      });
+      })
+    })
   })
 
   app.put("/todos/:id", (req, res)=>{
     const todoId = +req.params.id;
-    console.log('todoId', todoId);
     const title = req.body.title;
-    console.log('title', title);
     const description = req.body.description;
-    console.log('description', description);
     const todo = dataStore?.some((t) => t.id === todoId);
     if(!todo){
       res.status(404).send("Not Found");
@@ -122,6 +129,6 @@
 
   // start the server in the port 3000 !
 
-  // app.listen(3000);
+  app.listen(3000);
   
   module.exports = app;
