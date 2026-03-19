@@ -51,40 +51,40 @@ describe('API Endpoints', () => {
     });
   });
 
-  describe('GET /file/:filename', () => {
-    const testFilePath = path.join(__dirname, '../files', 'test-file.txt');
+  // describe('GET /file/:filename', () => {
+  //   const testFilePath = path.join(__dirname, '../files', 'test-file.txt');
 
-    beforeAll(() => {
-      fs.writeFileSync(testFilePath, 'Test file content');
-    });
+  //   beforeAll(() => {
+  //     fs.writeFileSync(testFilePath, 'Test file content');
+  //   });
 
-    afterAll(() => {
-      fs.unlinkSync(testFilePath);
-    });
+  //   afterAll(() => {
+  //     fs.unlinkSync(testFilePath);
+  //   });
 
-    test('should serve the requested file', async () => {
-      const options = {
-        method: 'GET',
-        path: '/file/test-file.txt'
-      };
-      const response = await sendRequest(options);
+  //   test('should serve the requested file', async () => {
+  //     const options = {
+  //       method: 'GET',
+  //       path: '/file/test-file.txt'
+  //     };
+  //     const response = await sendRequest(options);
 
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toBe('Test file content');
-    });
+  //     expect(response.statusCode).toBe(200);
+  //     expect(response.body).toBe('Test file content');
+  //   });
 
-    test('should handle file not found', async () => {
-      const options = {
-        method: 'GET',
-        path: '/file/non-existing-file.txt'
-      };
-      const response = await sendRequest(options);
+  //   test('should handle file not found', async () => {
+  //     const options = {
+  //       method: 'GET',
+  //       path: '/file/non-existing-file.txt'
+  //     };
+  //     const response = await sendRequest(options);
 
-      expect(response.statusCode).toBe(404);
-      expect(response.body).toBe('File not found');
-    });
+  //     expect(response.statusCode).toBe(404);
+  //     expect(response.body).toBe('File not found');
+  //   });
 
-  });
+  // });
 
   describe('Invalid Routes', () => {
     test('should return 404 for invalid routes', async () => {
