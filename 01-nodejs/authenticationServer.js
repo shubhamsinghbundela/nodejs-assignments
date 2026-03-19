@@ -93,10 +93,6 @@ app.get('/data', (req, res) => {
    const username = req.headers.username;
    const password = req.headers.password;
    const email = req.headers.email;
-   console.log('username', username);
-   console.log('password', password);
-   console.log('email', email);
-   console.log('!(username || email) && !password', !(username || email) || !password)
 
    if(!(username || email) || !password){
     res.status(401).send("Unauthorized")
