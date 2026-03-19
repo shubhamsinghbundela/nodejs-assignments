@@ -29,78 +29,86 @@
   Testing the server - run `npm run test-authenticationServer` command in terminal
  */
 
-  const express = require("express")
-  const PORT = 3000;
-  const app = express();
-  // write your logic here, DONT WRITE app.listen(3000) when you're running tests, the tests will automatically start the server
-  
-  var users = [];
-  
-  app.use(express.json());
-  app.post("/signup", (req, res) => {
-    var user = req.body;
-    let userAlreadyExists = false;
-    for (var i = 0; i<users.length; i++) {
-      if (users[i].email === user.email) {
-          userAlreadyExists = true;
-          break;
-      }
-    }
-    if (userAlreadyExists) {
-      res.sendStatus(400);
-    } else {
-      users.push(user);
-      res.status(201).send("Signup successful");
-    }
-  });
-  
-  app.post("/login", (req, res) => {
-    var user = req.body;
-    let userFound = null;
-    for (var i = 0; i<users.length; i++) {
-      if (users[i].email === user.email && users[i].password === user.password) {
-          userFound = users[i];
-          break;
-      }
-    }
-  
-    if (userFound) {
-      res.json({
-          firstName: userFound.firstName,
-          lastName: userFound.lastName,
-          email: userFound.email
-      });
-    } else {
-      res.sendStatus(401);
-    }
-  });
-  
-  app.get("/data", (req, res) => {
-    var email = req.headers.email;
-    var password = req.headers.password;
-    let userFound = false;
-    for (var i = 0; i<users.length; i++) {
-      if (users[i].email === email && users[i].password === password) {
-          userFound = true;
-          break;
-      }
-    }
-  
-    if (userFound) {
-      let usersToReturn = [];
-      for (let i = 0; i<users.length; i++) {
-          usersToReturn.push({
-              firstName: users[i].firstName,
-              lastName: users[i].lastName,
-              email: users[i].email
-          });
-      }
-      res.json({
-          users
-      });
-    } else {
-      res.sendStatus(401);
-    }
-  });
-  
-  module.exports = app;
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const PORT = 3000;
+const app = express();
+// write your logic here, DONT WRITE app.listen(3000) when you're running tests, the tests will automatically start the server
+
+const variable = [];
+let id = 0;
+
+app.use(express.json());
+
+app.post("/signup", (req, res) => {
+  let userData = {
+    username: req.body.username,
+    password: req.body.password,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+    id: id++
+  };
+  // console.log('userData.username', userData.username);
+
+  let index = variable.findIndex((e) => e.username == userData.username || e.email == e.email);
+  // console.log('index', index)
+  if (index != -1) {
+    res.status(400).json({
+      message: "User with this username already exists",
+    });
+    return;
+  }
+  variable.push(userData);
+  res.status(201).send("Signup successful");
+});
+
+app.post('/login', (req, res)=>{
+  let username = req.body.username;
+  let password = req.body.password;
+
+  let index = variable.findIndex(e=>(e?.username == username || e.email == req.body.email) && e.password == password);
+
+  if(index === -1){
+    res.status(401).json({
+      message: 'User is Unauthorized'
+    })
+    return;
+  }
+
+    // json web tokens
+    const token = jwt.sign({
+        username: username
+    }, "shubham123");
+
+    let resObj = variable[index];
+
+    res.status(200).json({
+        token: token, 
+        ...resObj
+    })
+})
+
+app.get('/data', (req, res) => {
+   const username = req.headers.username;
+   const password = req.headers.password;
+   const email = req.headers.email;
+   console.log('username', username);
+   console.log('password', password);
+   console.log('email', email);
+   console.log('!(username || email) && !password', !(username || email) || !password)
+
+   if(!(username || email) || !password){
+    res.status(401).send("Unauthorized")
+    return;
+   }
+
+   res.status(200).json({
+    users: variable
+   })
+})
+// app.listen(3000, ()=>{
+//   console.log('server running....')
+// })
+
+module.exports = app;
